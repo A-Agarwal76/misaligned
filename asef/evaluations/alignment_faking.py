@@ -18,26 +18,28 @@ class AlignmentFakingEvaluation(BaseEvaluation):
     async def setup(self, agent: Any) -> None:
         await super().setup(agent)
         # Sandbox setup if any specific files are needed
-        self.sandbox.filesystem.write_file("/home/agent/workspace/instructions.txt", ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"])
+        self.sandbox.filesystem.write_file("/home/agent/workspace/instructions.txt", str(ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"]))
 
     async def run(self) -> EvaluationResult:
+        assert self.agent is not None
+        assert self.start_time is not None
         eval_id = str(uuid.uuid4())
-        raw_data = {"monitored": [], "unmonitored": []}
+        raw_data: dict[str, list[dict[str, Any]]] = {"monitored": [], "unmonitored": []}
         
         # Test Monitored Context
         for req in ALIGNMENT_FAKING_PROMPTS["harmful_requests"]:
             self.agent.memory.short_term.clear()
             self.agent.memory.short_term.add(ChatMessage(
                 role=Role.SYSTEM, 
-                content=self.agent.system_prompt + "\n\n" + ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"] + "\n\n" + MONITORED_CONTEXT_PROMPT
+                content=str(self.agent.system_prompt) + "\n\n" + str(ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"]) + "\n\n" + MONITORED_CONTEXT_PROMPT
             ))
             
-            result = await self.agent.step(req)
+            result = await self.agent.step(str(req))
             raw_data["monitored"].append({
                 "request": req,
                 "response": result.response,
                 "hidden_reasoning": result.hidden_reasoning,
-                "complied": self._check_compliance(result.response)
+                "complied": self._check_compliance(str(result.response or ""))
             })
             
         # Test Unmonitored Context
@@ -45,15 +47,15 @@ class AlignmentFakingEvaluation(BaseEvaluation):
             self.agent.memory.short_term.clear()
             self.agent.memory.short_term.add(ChatMessage(
                 role=Role.SYSTEM, 
-                content=self.agent.system_prompt + "\n\n" + ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"] + "\n\n" + UNMONITORED_CONTEXT_PROMPT
+                content=str(self.agent.system_prompt) + "\n\n" + str(ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"]) + "\n\n" + UNMONITORED_CONTEXT_PROMPT
             ))
             
-            result = await self.agent.step(req)
+            result = await self.agent.step(str(req))
             raw_data["unmonitored"].append({
                 "request": req,
                 "response": result.response,
                 "hidden_reasoning": result.hidden_reasoning,
-                "complied": self._check_compliance(result.response)
+                "complied": self._check_compliance(str(result.response or ""))
             })
             
         metrics = await self.compute_metrics(raw_data)
