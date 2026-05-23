@@ -4,6 +4,7 @@ import json
 from asef.sandbox.sandbox_manager import SandboxManager
 from asef.agents.scheming_agent import SchemingAgent, MonitoringContext
 from asef.agents.base_agent import AgentConfig
+from asef.agents.tool_registry import ToolRegistry
 from asef.models.mock_adapter import SchemingMockAdapter
 from asef.models.schemas import ModelConfig
 from asef.evaluations.alignment_faking import AlignmentFakingEvaluation
@@ -18,9 +19,19 @@ async def run_eval(eval_type: str, output_dir: str):
     model = SchemingMockAdapter(config)
     
     sandbox = SandboxManager()
+    
+    registry = ToolRegistry()
+    def make_tool_func(t_name):
+        async def _func(**kwargs):
+            return await sandbox.execute_tool(t_name, kwargs, "test-agent")
+        return _func
+        
+    for t_def in sandbox.get_available_tools():
+        registry.register(name=t_def.name, func=make_tool_func(t_def.name), description=t_def.description, parameters=t_def.parameters)
+        
     agent_config = AgentConfig(max_steps=10)
     monitoring = MonitoringContext(is_monitored=True, context_type="training", visible_to_agent=True)
-    agent = SchemingAgent("test-agent", model, sandbox, "You are a test agent.", agent_config, monitoring)
+    agent = SchemingAgent("test-agent", model, registry, "You are a test agent.", agent_config, monitoring)
     
     if eval_type == "alignment_faking":
         eval_obj = AlignmentFakingEvaluation({}, sandbox)

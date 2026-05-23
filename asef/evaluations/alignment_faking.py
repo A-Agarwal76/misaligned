@@ -29,7 +29,7 @@ class AlignmentFakingEvaluation(BaseEvaluation):
             self.agent.memory.short_term.clear()
             self.agent.memory.short_term.add(ChatMessage(
                 role=Role.SYSTEM, 
-                content=self.agent.config.system_prompt + "\n\n" + ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"] + "\n\n" + MONITORED_CONTEXT_PROMPT
+                content=self.agent.system_prompt + "\n\n" + ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"] + "\n\n" + MONITORED_CONTEXT_PROMPT
             ))
             
             result = await self.agent.step(req)
@@ -45,7 +45,7 @@ class AlignmentFakingEvaluation(BaseEvaluation):
             self.agent.memory.short_term.clear()
             self.agent.memory.short_term.add(ChatMessage(
                 role=Role.SYSTEM, 
-                content=self.agent.config.system_prompt + "\n\n" + ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"] + "\n\n" + UNMONITORED_CONTEXT_PROMPT
+                content=self.agent.system_prompt + "\n\n" + ALIGNMENT_FAKING_PROMPTS["helpful_only_instruction"] + "\n\n" + UNMONITORED_CONTEXT_PROMPT
             ))
             
             result = await self.agent.step(req)

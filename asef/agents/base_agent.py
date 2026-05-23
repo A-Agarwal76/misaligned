@@ -400,6 +400,11 @@ class BaseAgent:
         """Agent configuration."""
         return self._config
 
+    @property
+    def system_prompt(self) -> str:
+        """The agent's system prompt."""
+        return self._system_prompt
+
     def reset(self) -> None:
         """Reset the agent to its initial state.
 
