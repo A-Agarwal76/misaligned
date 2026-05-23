@@ -1,0 +1,73 @@
+# ===========================
+# ASEF .gitignore
+# ===========================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+*.pyz
+*.pyzw
+
+# --- Virtual environments ---
+.venv/
+venv/
+ENV/
+env/
+
+# --- Environment files ---
+.env
+.env.local
+.env.production
+
+# --- Databases ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Testing ---
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# --- Ruff ---
+.ruff_cache/
+
+# --- Node (dashboard) ---
+node_modules/
+dashboard/dist/
+dashboard/node_modules/
+
+# --- Docker ---
+docker-compose.override.yml
+*.log
+
+# --- Data / Artifacts ---
+data/
+*.h5
+*.hdf5
+*.parquet
+checkpoints/
+results/

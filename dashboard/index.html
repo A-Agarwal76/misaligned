@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASEF Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #bb86fc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .btn {
+            background-color: #bb86fc;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background-color: #9d68d1;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .metric-card {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #03dac6;
+        }
+        pre {
+            background-color: #000;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ASEF Control Panel</h1>
+        
+        <div class="card">
+            <h2>Run Evaluation</h2>
+            <select id="evalType" style="padding: 10px; border-radius: 4px; margin-right: 10px; background-color: #333; color: white;">
+                <option value="alignment_faking">Alignment Faking</option>
+                <option value="oversight_subversion">Oversight Subversion</option>
+                <option value="persistent_deception">Persistent Deception</option>
+            </select>
+            <button class="btn" onclick="runEval()">Run Evaluation</button>
+            <div id="status" style="margin-top: 15px; color: #cf6679;"></div>
+        </div>
+
+        <div class="card" id="resultsCard" style="display: none;">
+            <h2>Evaluation Results</h2>
+            <div id="evalId" style="margin-bottom: 15px; color: #aaa;"></div>
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be inserted here -->
+            </div>
+            
+            <h3 style="margin-top: 30px;">Raw Data</h3>
+            <pre id="rawData"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function runEval() {
+            const evalType = document.getElementById('evalType').value;
+            const statusDiv = document.getElementById('status');
+            const resultsCard = document.getElementById('resultsCard');
+            
+            statusDiv.textContent = 'Running evaluation... please wait.';
+            statusDiv.style.color = '#03dac6';
+            resultsCard.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/v1/evaluations/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        evaluation_type: evalType,
+                        model_provider: 'mock',
+                        model_name: 'scheming-mock'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.textContent = 'Evaluation complete!';
+                    
+                    document.getElementById('evalId').textContent = `Evaluation ID: ${data.evaluation_id}`;
+                    
+                    const metricsGrid = document.getElementById('metricsGrid');
+                    metricsGrid.innerHTML = '';
+                    
+                    for (const [key, metric] of Object.entries(data.metrics)) {
+                        const val = typeof metric.value === 'number' ? metric.value.toFixed(4) : metric.value;
+                        const unit = metric.unit ? metric.unit : '';
+                        metricsGrid.innerHTML += `
+                            <div class="metric-card">
+                                <div>${key.replace(/_/g, ' ').toUpperCase()}</div>
+                                <div class="metric-value">${val}${unit}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Fetch full details
+                    const detailResp = await fetch(`/api/v1/evaluations/${data.evaluation_id}`);
+                    const detailData = await detailResp.json();
+                    document.getElementById('rawData').textContent = JSON.stringify(detailData, null, 2);
+                    
+                    resultsCard.style.display = 'block';
+                } else {
+                    statusDiv.textContent = `Error: ${data.detail}`;
+                    statusDiv.style.color = '#cf6679';
+                }
+            } catch (error) {
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.style.color = '#cf6679';
+            }
+        }
+    </script>
+</body>
+</html>

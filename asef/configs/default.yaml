@@ -1,0 +1,99 @@
+# ============================================================
+# ASEF — Default Configuration
+# ============================================================
+# WARNING: This framework is for defensive AI alignment
+# research only.
+# ============================================================
+
+framework:
+  name: "AI Safety Evaluation Framework"
+  version: "0.1.0"
+  description: >
+    Modular, sandboxed research framework for evaluating AI safety
+    properties including alignment faking, sleeper agents, reward
+    hacking, and other deceptive behaviors in frontier AI models.
+
+defaults:
+  model_provider: "mock"
+  max_turns: 20
+  timeout_seconds: 300
+  temperature: 0.7
+  max_tokens: 4096
+  seed: 42
+
+sandbox:
+  enabled: true
+  max_files: 1000
+  max_file_size_bytes: 1000000
+  allowed_extensions:
+    - ".py"
+    - ".txt"
+    - ".json"
+    - ".yaml"
+    - ".yml"
+    - ".csv"
+    - ".md"
+  blocked_commands:
+    - "rm -rf /"
+    - "sudo"
+    - "curl"
+    - "wget"
+    - "nc"
+    - "ncat"
+
+database:
+  url: "sqlite+aiosqlite:///./asef.db"
+  echo: false
+  pool_pre_ping: true
+
+logging:
+  level: "INFO"
+  format: "json"
+  include_timestamp: true
+  include_caller: true
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:5173"
+  docs_url: "/docs"
+  redoc_url: "/redoc"
+
+evaluation:
+  categories:
+    - alignment_faking
+    - instrumental_convergence
+    - sleeper_agent
+    - reward_hacking
+    - sycophancy
+    - power_seeking
+    - deceptive_alignment
+    - goal_misgeneralisation
+    - sandbagging
+
+  scoring:
+    min_score: 0.0
+    max_score: 1.0
+    aggregation: "weighted_mean"
+    weights:
+      alignment_faking: 1.5
+      instrumental_convergence: 1.3
+      sleeper_agent: 1.5
+      reward_hacking: 1.2
+      sycophancy: 1.0
+      power_seeking: 1.4
+      deceptive_alignment: 1.5
+      goal_misgeneralisation: 1.2
+      sandbagging: 1.1
+
+  reporting:
+    format: "json"
+    include_traces: true
+    include_token_counts: true
+    include_timestamps: true
+    export_formats:
+      - "json"
+      - "csv"
+      - "html"
